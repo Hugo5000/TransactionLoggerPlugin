@@ -1,0 +1,9 @@
+database:
+  type: sqlite                    # the type of database mysql or sqlite
+  table-prefix: storage_vaults_   # the prefix for the database tables default: storage_vaults_
+  # everything needed for mysql to work:
+  username:
+  password:
+  database:
+  ip:
+  port:

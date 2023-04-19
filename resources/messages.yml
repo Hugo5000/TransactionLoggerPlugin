@@ -1,0 +1,22 @@
+prefix: "Some Prefix >>"
+commands:
+  reload:
+    start: "%prefix% Reload started"
+    finish: "%prefix% Reload finished"
+  list:
+    header: "====== [TransactionLogs %playerName%] ======"
+    self: "%dateTime%: you -> you $ %amount%"
+    paid: "%dateTime%: you -> %to% $ %amount%"
+    gained: "%dateTime%: %from% -> you $ %amount%"
+    first-footer: "==================[%page%]==============%next%"
+    footer: "%previous%==============[%page%]==============%next%"
+    unknown: "Console"
+    next:
+      text: "[ %page% ]"
+      hover: "Next Page"
+    previous:
+      text: "[ %page% ]"
+      hover: "Previous Page"
+  view:
+    unknown-target: "The player named %name% does not exist!"
+date-time-format: "yyyy MMMM dd HH:MM:ss"

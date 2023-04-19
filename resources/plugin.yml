@@ -1,0 +1,21 @@
+name: ${name}
+version: ${version}
+description: ${description}
+load: POSTWORLD
+api-version: ${api}
+author: Hugo B.
+
+main: ${group}.${artifact}.${main}
+
+softdepend:
+  - Essentials
+
+permissions:
+  # main command
+  example.command:
+    description: allows the use of the "/example" command
+  # reload
+  example.command.reload:
+    description: allows to reload the plugin with "/example reload"
+    children:
+      example.command: true
