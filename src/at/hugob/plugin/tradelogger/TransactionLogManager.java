@@ -11,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -48,6 +49,11 @@ public class TransactionLogManager {
             plugin.getLogger().warning(String.format("Transaction without a player being involved! %s", TradeLoggerPlugin.decimalFormat.format(transaction.amount())));
             return;
         }
+        if (Objects.equals(transaction.from(), transaction.to())) {
+            plugin.getLogger().info(String.format("Not saving Transaction because %s sent himself money! %s", plugin.getNameManager().getName(transaction.from()), TradeLoggerPlugin.decimalFormat.format(transaction.amount())));
+            return;
+        }
+
         if (transaction.from() == null) {
             EconomyTransaction match = null;
             for (EconomyTransaction economyTransaction : notMatched) {

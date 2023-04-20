@@ -29,11 +29,13 @@ public class PlayerNameManager {
     }
 
     public @NotNull Component getDisplayName(final @NotNull UUID player) {
+        if(player == null) return null;
         if (Bukkit.getOfflinePlayer(player).isOnline()) return Bukkit.getPlayer(player).displayName();
         return displayNames.getOrDefault(player, Component.empty());
     }
 
     public @NotNull String getName(final @NotNull UUID player) {
+        if(player == null) return null;
         if (Bukkit.getOfflinePlayer(player).isOnline()) return Bukkit.getPlayer(player).getName();
         return playerNames.getOrDefault(player, "");
     }

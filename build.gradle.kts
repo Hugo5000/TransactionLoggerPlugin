@@ -32,7 +32,7 @@ dependencies {
 
     implementation("at.hugob.plugin.library:gui:0.0.0-SNAPSHOT")
     implementation("at.hugob.plugin.library:command:1.0.0")
-    implementation("at.hugob.plugin.library:config:0.0.2-SNAPSHOT")
+    implementation("at.hugob.plugin.library:config:0.0.3-SNAPSHOT")
     implementation("at.hugob.plugin.library:database:0.0.2-SNAPSHOT")
 
     compileOnly("net.essentialsx:EssentialsX:2.19.7")

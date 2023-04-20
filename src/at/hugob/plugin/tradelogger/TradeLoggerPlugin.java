@@ -38,12 +38,14 @@ public class TradeLoggerPlugin extends JavaPlugin {
     private final static String commandName = "transactionlog";
     private YamlFileConfig messages;
     private CommandManager commandManager;
+    private GUIManager guiManager;
     private ITradeLogDatabase database;
     private PlayerNameManager playerNameManager;
     private TransactionLogManager transactionLogManager;
 
     @Override
     public void onEnable() {
+        guiManager = new GUIManager(this);
         messages = new YamlFileConfig(this, "messages.yml");
         reloadConfig();
         try {
@@ -83,6 +85,8 @@ public class TradeLoggerPlugin extends JavaPlugin {
         saveDefaultConfig();
         super.reloadConfig();
         messages.reload();
+
+        guiManager.reload();
 
         dateTimeFormatter = DateTimeFormatter.ofPattern(messages.getString("date-time-format"));
 
@@ -156,6 +160,10 @@ public class TradeLoggerPlugin extends JavaPlugin {
         commandManager.command(transactionLogMenuBuilder
                 .permission("tl.command.menu")
                 .senderType(Player.class)
+                .handler(commandContext -> {
+                    final Player sender = (Player) commandContext.getSender();
+                    guiManager.openTransactionGUI(sender, sender.getUniqueId());
+                })
         );
     }
 
@@ -170,16 +178,7 @@ public class TradeLoggerPlugin extends JavaPlugin {
                 message.append(Component.newline());
                 final Component from = transaction.from() == null ? messages.getComponent("commands.list.unknown") : playerNameManager.getDisplayName(transaction.from());
                 final Component to = transaction.to() == null ? messages.getComponent("commands.list.unknown") : playerNameManager.getDisplayName(transaction.to());
-                if (player.equals(transaction.to()) && player.equals(transaction.from())) {
-                    message.append(messages.getComponent("commands.list.self").replaceText(TextReplacementConfig.builder().match("%([^ ]+)%")
-                            .replacement((matchResult, builder) -> switch (matchResult.group(1)) {
-                                case "from" -> from;
-                                case "to" -> to;
-                                case "dateTime" -> builder.content(dateTimeFormatter.format(transaction.dateTime()));
-                                case "amount" -> builder.content(decimalFormat.format(transaction.amount()));
-                                default -> builder;
-                            }).build()));
-                } else if (player.equals(transaction.to())) {
+                if (player.equals(transaction.to())) {
                     message.append(messages.getComponent("commands.list.gained").replaceText(TextReplacementConfig.builder().match("%([^ ]+)%")
                             .replacement((matchResult, builder) -> switch (matchResult.group(1)) {
                                 case "from" -> from;
@@ -277,5 +276,9 @@ public class TradeLoggerPlugin extends JavaPlugin {
 
     public TransactionLogManager getTransactionLogManager() {
         return transactionLogManager;
+    }
+
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 }
