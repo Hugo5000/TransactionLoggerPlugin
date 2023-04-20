@@ -10,7 +10,6 @@ commands:
     gained: "%dateTime%: %from% -> you $ %amount%"
     first-footer: "==================[%page%]==============%next%"
     footer: "%previous%==============[%page%]==============%next%"
-    unknown: "Console"
     next:
       text: "[ %page% ]"
       hover: "Next Page"
@@ -19,4 +18,15 @@ commands:
       hover: "Previous Page"
   view:
     unknown-target: "The player named %name% does not exist!"
+console:
+  Unknown: "Console"
+  Essentials: "Essentials"
+  EssentialsSell: "EssentialsSell"
+  EssentialsEco: "EssentialsEco"
+  ChestShop: "ChestShop"
+  BeastWithdraw: "BeastWithdraw"
+#  DeluxeSellWands: "SellWands"
+  MoneyFromMobs: "MoneyFromMobs"
+  ShopGUIPlus: "ShopGUIPlus"
+
 date-time-format: "yyyy MMMM dd HH:MM:ss"

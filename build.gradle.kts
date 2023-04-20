@@ -24,6 +24,10 @@ repositories {
     maven("https://papermc.io/repo/repository/maven-public/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.essentialsx.net/releases/")
+    // ChestShop
+    maven("https://repo.minebench.de")
+    // ShopGUI and DeluxeSellWands
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -36,6 +40,11 @@ dependencies {
     implementation("at.hugob.plugin.library:database:0.0.2-SNAPSHOT")
 
     compileOnly("net.essentialsx:EssentialsX:2.19.7")
+    compileOnly("com.acrobot.chestshop:chestshop:3.12")
+//    compileOnly("com.github.N0RSKA:DeluxeSellwandsAPI:32c")
+    compileOnly("com.github.brcdev-minecraft:shopgui-api:3.0.0")
+    // BeastWithdraw and MoneyFromMobs
+    compileOnly(fileTree("./dependencies/"))
 }
 
 java {
@@ -66,7 +75,6 @@ idea {
     }
 }
 
-
 tasks.register<Copy>("prepareServer") {
     dependsOn("build")
     from(tasks.jar.get().archiveFile.get().asFile.path)
@@ -79,7 +87,8 @@ tasks {
         archiveClassifier.set("")
     }
     compileJava {
-        options.compilerArgs.add("-parameters")
+//        options.compilerArgs.add("-Xlint:unchecked")
+//        options.compilerArgs.add("-parameters")
         options.encoding = "UTF-8"
     }
     compileTestJava { options.encoding = "UTF-8" }

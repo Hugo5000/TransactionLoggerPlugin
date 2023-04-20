@@ -29,15 +29,15 @@ public class PlayerNameManager {
     }
 
     public @NotNull Component getDisplayName(final @NotNull UUID player) {
-        if(player == null) return null;
+        if (player == null) return null;
         if (Bukkit.getOfflinePlayer(player).isOnline()) return Bukkit.getPlayer(player).displayName();
-        return displayNames.getOrDefault(player, Component.empty());
+        return displayNames.getOrDefault(player, Component.text(player.toString()));
     }
 
     public @NotNull String getName(final @NotNull UUID player) {
-        if(player == null) return null;
+        if (player == null) return null;
         if (Bukkit.getOfflinePlayer(player).isOnline()) return Bukkit.getPlayer(player).getName();
-        return playerNames.getOrDefault(player, "");
+        return playerNames.getOrDefault(player, player.toString());
     }
 
     public @Nullable UUID getUUID(final @NotNull String name) {
@@ -49,7 +49,7 @@ public class PlayerNameManager {
         playerNames.put(player.getUniqueId(), player.getName());
         uuids.put(player.getName(), player.getUniqueId());
         uuids.putIfAbsent(PlainTextComponentSerializer.plainText().serialize(player.displayName()), player.getUniqueId());
-        plugin.getDatabase().saveNames(new PlayerName(player.getUniqueId(), player.getName(), player.displayName()));
+        plugin.getDatabase().save(new PlayerName(player.getUniqueId(), player.getName(), player.displayName()));
     }
 
     public List<String> allNames() {

@@ -1,37 +1,70 @@
 package at.hugob.plugin.tradelogger;
 
+import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
 import at.hugob.plugin.tradelogger.data.EconomyTransaction;
+import at.hugob.plugin.tradelogger.data.PluginTransactionContext;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Predicate;
 
 public class TransactionLogManager {
-    private final @NotNull ConcurrentLinkedQueue<EconomyTransaction> notMatched = new ConcurrentLinkedQueue<>();
+    private final @NotNull ConcurrentLinkedQueue<EconomyTransaction> bufferedEconomyTransactions = new ConcurrentLinkedQueue<>();
     private final @NotNull TradeLoggerPlugin plugin;
     private final @NotNull BukkitTask bukkitTask;
+    private @NotNull HashMap<String, PluginTransactionContext> pluginTransactionContexts = new HashMap<>();
 
     public TransactionLogManager(final @NotNull TradeLoggerPlugin plugin) {
         this.plugin = plugin;
-        bukkitTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::removeOldUnmatchedData, 0, 0);
+        bukkitTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::removeOldBufferedData, 0, 0);
     }
 
-    private void removeOldUnmatchedData() {
+    public void reload() {
+        final HashMap<String, PluginTransactionContext> pluginTransactionContexts = new HashMap<>();
+        if (Bukkit.getPluginManager().getPlugin("Essentials") != null) {
+            pluginTransactionContexts.put("Essentials", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("Essentials"), plugin.getMessagesConfig().getComponent("console.Essentials")));
+            pluginTransactionContexts.put("EssentialsSell", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("Essentials"), "EssentialsSell", plugin.getMessagesConfig().getComponent("console.EssentialsSell")));
+            pluginTransactionContexts.put("EssentialsEco", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("Essentials"), "EssentialsEco", plugin.getMessagesConfig().getComponent("console.EssentialsEco")));
+        }
+        if (Bukkit.getPluginManager().getPlugin("ChestShop") != null) {
+            pluginTransactionContexts.put("ChestShop", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("ChestShop"), plugin.getMessagesConfig().getComponent("console.ChestShop")));
+        }
+        if (Bukkit.getPluginManager().getPlugin("BeastWithdraw") != null) {
+            pluginTransactionContexts.put("BeastWithdraw", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("BeastWithdraw"), plugin.getMessagesConfig().getComponent("console.BeastWithdraw")));
+        }
+        if (Bukkit.getPluginManager().getPlugin("MoneyFromMobs") != null) {
+            pluginTransactionContexts.put("MoneyFromMobs", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("MoneyFromMobs"), plugin.getMessagesConfig().getComponent("console.MoneyFromMobs")));
+        }
+        if (Bukkit.getPluginManager().getPlugin("ShopGUIPlus") != null) {
+            pluginTransactionContexts.put("ShopGUIPlus", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("ShopGUIPlus"), plugin.getMessagesConfig().getComponent("console.ShopGUIPlus")));
+        }
+        this.pluginTransactionContexts = pluginTransactionContexts;
+
+        for (PluginTransactionContext value : pluginTransactionContexts.values()) {
+            CompletableFuture.runAsync(() -> plugin.getDatabase().save(value));
+        }
+    }
+
+
+    public ConsoleTransactionContext getContext(String name) {
+        return pluginTransactionContexts.get(name);
+    }
+
+    private void removeOldBufferedData() {
         final ZonedDateTime now = ZonedDateTime.now();
-        ArrayList<EconomyTransaction> removed = new ArrayList<>();
-        for (EconomyTransaction economyTransaction : notMatched) {
+        ArrayList<EconomyTransaction> removed = new ArrayList<>(10);
+        for (EconomyTransaction economyTransaction : bufferedEconomyTransactions) {
             if (economyTransaction.dateTime().until(now, ChronoUnit.MILLIS) > 50) {
-                if (notMatched.remove(economyTransaction)) {
+                if (bufferedEconomyTransactions.remove(economyTransaction)) {
                     removed.add(economyTransaction);
                 }
             }
@@ -39,8 +72,24 @@ public class TransactionLogManager {
         CompletableFuture.runAsync(() -> {
             for (EconomyTransaction economyTransaction : removed) {
                 plugin.getDatabase().save(economyTransaction);
-                plugin.getLogger().info("Saving" + TradeLoggerPlugin.decimalFormat.format(economyTransaction.amount()));
             }
+        });
+    }
+
+
+    public void setContext(UUID from, UUID to, BigDecimal amount, ConsoleTransactionContext context) {
+        var match = getMatch(transaction -> transaction.amount().compareTo(amount) == 0
+                && (from == null || from.equals(transaction.from()))
+                && (to == null || to.equals(transaction.to()))
+                && transaction.consoleContext() == null);
+        if (match != null) match.consoleContext(context);
+        // try again once
+        else Bukkit.getScheduler().runTask(plugin, () -> {
+            var m2 = getMatch(transaction -> transaction.amount().compareTo(amount) == 0
+                    && (from == null || from.equals(transaction.from()))
+                    && (to == null || to.equals(transaction.to()))
+                    && transaction.consoleContext() == null);
+            if (m2 != null) m2.consoleContext(context);
         });
     }
 
@@ -50,39 +99,33 @@ public class TransactionLogManager {
             return;
         }
         if (Objects.equals(transaction.from(), transaction.to())) {
-            plugin.getLogger().info(String.format("Not saving Transaction because %s sent himself money! %s", plugin.getNameManager().getName(transaction.from()), TradeLoggerPlugin.decimalFormat.format(transaction.amount())));
+            plugin.getLogger().warning(String.format("Not saving Transaction because %s sent himself money! %s", plugin.getNameManager().getName(transaction.from()), TradeLoggerPlugin.decimalFormat.format(transaction.amount())));
             return;
         }
 
         if (transaction.from() == null) {
-            EconomyTransaction match = null;
-            for (EconomyTransaction economyTransaction : notMatched) {
-                if (economyTransaction.amount().equals(transaction.amount()) && economyTransaction.to() == null) {
-                    match = economyTransaction;
-                    break;
-                }
-            }
-            if (match == null || !notMatched.remove(match)) {
-                notMatched.add(transaction);
+            EconomyTransaction match = getMatch(t -> t.amount().compareTo(transaction.amount()) == 0 && t.to() == null);
+            if (match != null) {
+                match.to(transaction.to());
                 return;
             }
-            transaction = new EconomyTransaction(match.from(), transaction.to(), transaction.amount(), transaction.dateTime());
         } else if (transaction.to() == null) {
-            EconomyTransaction match = null;
-            for (EconomyTransaction economyTransaction : notMatched) {
-                if (economyTransaction.amount().equals(transaction.amount()) && economyTransaction.from() == null) {
-                    match = economyTransaction;
-                    break;
-                }
-            }
-            if (match == null || !notMatched.remove(match)) {
-                notMatched.add(transaction);
+            EconomyTransaction match = getMatch(t -> t.amount().compareTo(transaction.amount()) == 0 && t.from() == null);
+            if (match != null) {
+                match.from(transaction.from());
                 return;
             }
-            transaction = new EconomyTransaction(transaction.from(), match.to(), transaction.amount(), transaction.dateTime());
         }
-        final EconomyTransaction saving = transaction;
-        CompletableFuture.runAsync(() -> plugin.getDatabase().save(saving));
+        bufferedEconomyTransactions.add(transaction);
+    }
+
+    private @Nullable EconomyTransaction getMatch(Predicate<EconomyTransaction> condition) {
+        for (EconomyTransaction economyTransaction : bufferedEconomyTransactions) {
+            if (condition.test(economyTransaction)) {
+                return economyTransaction;
+            }
+        }
+        return null;
     }
 
     public CompletableFuture<List<EconomyTransaction>> get(@Nullable Player player, int offset, int amount) {
@@ -103,9 +146,9 @@ public class TransactionLogManager {
 
     public void disable() {
         bukkitTask.cancel();
-        for (EconomyTransaction economyTransaction : notMatched) {
+        for (EconomyTransaction economyTransaction : bufferedEconomyTransactions) {
             plugin.getDatabase().save(economyTransaction);
         }
-        notMatched.clear();
+        bufferedEconomyTransactions.clear();
     }
 }

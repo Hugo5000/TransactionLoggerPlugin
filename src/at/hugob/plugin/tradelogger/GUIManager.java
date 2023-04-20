@@ -21,7 +21,16 @@ public class GUIManager {
             Component.empty(), Collections.EMPTY_LIST,
             Component.empty(), Collections.EMPTY_LIST,
             null, 0,
-            null, 0);
+            null, 0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+    );
 
     public GUIManager(TradeLoggerPlugin plugin) {
         this.plugin = plugin;
@@ -43,7 +52,16 @@ public class GUIManager {
                 ConfigUtils.getItemStack(transactionGUIConfig, "next-page.item"),
                 transactionGUIConfig.getInt("next-page.slot"),
                 ConfigUtils.getItemStack(transactionGUIConfig, "previous-page.item"),
-                transactionGUIConfig.getInt("previous-page.slot"));
+                transactionGUIConfig.getInt("previous-page.slot"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.Unknown"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.Essentials"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.EssentialsSell"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.EssentialsEco"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.ChestShop"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.BeastWithdraw"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.MoneyFromMobs"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.ShopGUIPlus")
+        );
     }
 
     public void openTransactionGUI(Player player, UUID owner) {

@@ -9,13 +9,35 @@ main: ${group}.${artifact}.${main}
 
 softdepend:
   - Essentials
+  - ChestShop
+  - BeastWithdraw
+  #  - DeluxeSellWands
+  - MoneyFromMobs
+  - ShopGUIPlus
 
 permissions:
-  # main command
-  example.command:
-    description: allows the use of the "/example" command
-  # reload
-  example.command.reload:
-    description: allows to reload the plugin with "/example reload"
+  tl.command.help:
+    description: allows access to the /tl help command
+  tl.admin.reload:
+    description: allows access to the /tl reload command
+  tl.admin.version:
+    description: allows access to the /tl version command
+  tl.command.list:
+    description: allows access to the /tl list command
+  tl.command.view:
+    description: allows access to the /tl view command
+  tl.command.menu:
+    description: allows access to the /tlm command
+  tl.commands:
+    description: allows access to all normal /tl commands
     children:
-      example.command: true
+      tl.command.list: true
+      tl.command.menu: true
+      tl.command.help: true
+  tl.admins:
+    description: allows access to all /tl commands
+    children:
+      tl.commands: true
+      tl.command.view: true
+      tl.command.reload: true
+      tl.command.version: true

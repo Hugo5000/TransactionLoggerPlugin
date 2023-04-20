@@ -2,13 +2,12 @@ package at.hugob.plugin.tradelogger;
 
 import at.hugob.plugin.library.command.CommandManager;
 import at.hugob.plugin.library.config.YamlFileConfig;
+import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
 import at.hugob.plugin.tradelogger.data.EconomyTransaction;
 import at.hugob.plugin.tradelogger.database.ITradeLogDatabase;
 import at.hugob.plugin.tradelogger.database.MySQLTradeLogDatabase;
 import at.hugob.plugin.tradelogger.database.SQLiteTradeLogDatabase;
-import at.hugob.plugin.tradelogger.listener.EssentialsEconomyListener;
-import at.hugob.plugin.tradelogger.listener.GUIListener;
-import at.hugob.plugin.tradelogger.listener.PlayerNameListener;
+import at.hugob.plugin.tradelogger.listener.*;
 import cloud.commandframework.ArgumentDescription;
 import cloud.commandframework.CommandHelpHandler;
 import cloud.commandframework.arguments.standard.IntegerArgument;
@@ -28,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static net.kyori.adventure.text.Component.text;
@@ -42,11 +42,14 @@ public class TradeLoggerPlugin extends JavaPlugin {
     private ITradeLogDatabase database;
     private PlayerNameManager playerNameManager;
     private TransactionLogManager transactionLogManager;
+    private ConsoleTransactionContext defaultContext;
 
     @Override
     public void onEnable() {
-        guiManager = new GUIManager(this);
         messages = new YamlFileConfig(this, "messages.yml");
+
+        guiManager = new GUIManager(this);
+        transactionLogManager = new TransactionLogManager(this);
         reloadConfig();
         try {
             commandManager = new CommandManager(this,
@@ -65,13 +68,28 @@ public class TradeLoggerPlugin extends JavaPlugin {
             return;
         }
         playerNameManager = new PlayerNameManager(this);
-        transactionLogManager = new TransactionLogManager(this);
         createCommands();
         Bukkit.getPluginManager().registerEvents(new GUIListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerNameListener(this), this);
         if (Bukkit.getPluginManager().getPlugin("Essentials") != null) {
             getLogger().info("Tracking Essentials Economy Transactions");
             Bukkit.getPluginManager().registerEvents(new EssentialsEconomyListener(this), this);
+        }
+        if (Bukkit.getPluginManager().getPlugin("ChestShop") != null) {
+            getLogger().info("Tracking ChestShop Transactions");
+            Bukkit.getPluginManager().registerEvents(new ChestShopListener(this), this);
+        }
+        if (Bukkit.getPluginManager().getPlugin("BeastWithdraw") != null) {
+            getLogger().info("Tracking BeastWithdraw Transactions");
+            Bukkit.getPluginManager().registerEvents(new BeastWithdrawListener(this), this);
+        }
+        if (Bukkit.getPluginManager().getPlugin("MoneyFromMobs") != null) {
+            getLogger().info("Tracking MoneyFromMobs Transactions");
+            Bukkit.getPluginManager().registerEvents(new MoneyFromMobsListener(this), this);
+        }
+        if (Bukkit.getPluginManager().getPlugin("ShopGUIPlus") != null) {
+            getLogger().info("Tracking ShopGUIPlus Transactions");
+            Bukkit.getPluginManager().registerEvents(new ShopGUIListener(this), this);
         }
     }
 
@@ -91,6 +109,10 @@ public class TradeLoggerPlugin extends JavaPlugin {
         dateTimeFormatter = DateTimeFormatter.ofPattern(messages.getString("date-time-format"));
 
         database = createDatabase();
+
+        transactionLogManager.reload();
+
+        defaultContext = new ConsoleTransactionContext("Console", messages.getComponent("console.Unknown"));
     }
 
     private void createCommands() {
@@ -98,7 +120,7 @@ public class TradeLoggerPlugin extends JavaPlugin {
         var transactionLogMenuBuilder = commandManager.manager().commandBuilder("transactionlogmenu", "tlm");
 
         commandManager.command(transactionLogBuilder.literal("help", ArgumentDescription.of("The main help command"))
-                .permission("tl.commands.help")
+                .permission("tl.command.help")
                 .argument(StringArgument.<CommandSender>builder("query").greedy().asOptional().withSuggestionsProvider((context, string) ->
                         commandManager.manager().createCommandHelpHandler().queryRootIndex(context.getSender()).getEntries().stream()
                                 .map(CommandHelpHandler.VerboseHelpEntry::getSyntaxString).collect(Collectors.toList())
@@ -176,8 +198,8 @@ public class TradeLoggerPlugin extends JavaPlugin {
                     }).build()));
             for (EconomyTransaction transaction : transactions) {
                 message.append(Component.newline());
-                final Component from = transaction.from() == null ? messages.getComponent("commands.list.unknown") : playerNameManager.getDisplayName(transaction.from());
-                final Component to = transaction.to() == null ? messages.getComponent("commands.list.unknown") : playerNameManager.getDisplayName(transaction.to());
+                final Component from = transaction.from() == null ? transaction.consoleContextOr(defaultContext).displayName() : playerNameManager.getDisplayName(transaction.from());
+                final Component to = transaction.to() == null ? transaction.consoleContextOr(defaultContext).displayName() : playerNameManager.getDisplayName(transaction.to());
                 if (player.equals(transaction.to())) {
                     message.append(messages.getComponent("commands.list.gained").replaceText(TextReplacementConfig.builder().match("%([^ ]+)%")
                             .replacement((matchResult, builder) -> switch (matchResult.group(1)) {
@@ -243,6 +265,9 @@ public class TradeLoggerPlugin extends JavaPlugin {
                         }).build()));
             }
             return message.build();
+        }).exceptionally(t -> {
+            getLogger().log(Level.SEVERE, t.getMessage(), t);
+            return Component.text(t.getMessage());
         });
     }
 
@@ -280,5 +305,9 @@ public class TradeLoggerPlugin extends JavaPlugin {
 
     public DateTimeFormatter getDateTimeFormatter() {
         return dateTimeFormatter;
+    }
+
+    public ConsoleTransactionContext getDefaultContext() {
+        return defaultContext;
     }
 }

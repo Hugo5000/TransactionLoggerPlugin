@@ -1,5 +1,6 @@
 package at.hugob.plugin.tradelogger.database;
 
+import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
 import at.hugob.plugin.tradelogger.data.EconomyTransaction;
 import at.hugob.plugin.tradelogger.data.PlayerName;
 import org.jetbrains.annotations.NotNull;
@@ -8,7 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ITradeLogDatabase {
-    void saveNames(final @NotNull PlayerName playerName);
+    void save(final @NotNull PlayerName playerName);
+
+    void saveNew(final @NotNull PlayerName playerName);
 
     @NotNull List<PlayerName> getPlayerNames();
 
@@ -18,6 +21,8 @@ public interface ITradeLogDatabase {
      * @param transaction the Transaction to save
      */
     void save(final @NotNull EconomyTransaction transaction);
+
+    void save(final @NotNull ConsoleTransactionContext consoleTransactionContext);
 
     /**
      * Gets up to {@code amount} transactions in chronological order with a specific player involved, skipping the first {@code offset} transactions
@@ -29,15 +34,8 @@ public interface ITradeLogDatabase {
      */
     @NotNull List<@NotNull EconomyTransaction> get(final UUID player, int offset, int amount);
 
-    /**
-     * Gets up to {@code amount} transactions in chronological order where a specific player is the one who lost money, skipping the first {@code offset} transactions
-     *
-     * @param player
-     * @param offset
-     * @param amount
-     * @return
-     */
     @NotNull List<@NotNull EconomyTransaction> getOutgoing(final UUID player, int offset, int amount);
 
     @NotNull List<@NotNull EconomyTransaction> getIncoming(final UUID player, int offset, int amount);
+
 }

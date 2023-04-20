@@ -6,6 +6,7 @@ import at.hugob.plugin.tradelogger.data.EconomyTransaction;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -49,25 +50,30 @@ public class TransactionsGUI extends GUIHandler<TradeLoggerPlugin, TransactionsG
         if (itemStack == null) return null;
         itemStack = itemStack.clone();
         final ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.displayName(itemMeta.displayName().replaceText(TextReplacementConfig.builder().match("%([^ ]+)%").replacement((matchResult, builder) -> switch (matchResult.group(1)) {
-            case "previousPage" -> builder.content(String.valueOf(page));
-            case "page" -> builder.content(String.valueOf(page + 1));
-            case "nextPage" -> builder.content(String.valueOf(page + 2));
-            default -> builder;
-        }).build()));
+        if (itemMeta.hasDisplayName())
+            itemMeta.displayName(itemMeta.displayName().replaceText(TextReplacementConfig.builder().match("%([^ ]+)%").replacement((matchResult, builder) -> switch (matchResult.group(1)) {
+                case "previousPage" -> builder.content(String.valueOf(page));
+                case "page" -> builder.content(String.valueOf(page + 1));
+                case "nextPage" -> builder.content(String.valueOf(page + 2));
+                default -> builder;
+            }).build()));
         itemStack.setItemMeta(itemMeta);
         return itemStack;
     }
 
     private boolean previousPage(InventoryClickEvent event) {
-        if (page > 0) --page;
-        update();
+        if (event.getClick() == ClickType.LEFT) {
+            if (page > 0) --page;
+            update();
+        }
         return true;
     }
 
     private boolean nextPage(InventoryClickEvent event) {
-        ++page;
-        update();
+        if (event.getClick() == ClickType.LEFT) {
+            ++page;
+            update();
+        }
         return true;
     }
 
@@ -79,37 +85,53 @@ public class TransactionsGUI extends GUIHandler<TradeLoggerPlugin, TransactionsG
             final EconomyTransaction economyTransaction = economyTransactionIterator.next();
             var textReplacementConfig = TextReplacementConfig.builder().match("%([^ ]+)%").replacement((matchResult, builder) -> switch (matchResult.group(1)) {
                 case "dateTime" -> builder.content(plugin.getDateTimeFormatter().format(economyTransaction.dateTime()));
-                case "from" -> {
-                    var result = plugin.getNameManager().getDisplayName(economyTransaction.from());
-                    if (result == null) result = plugin.getMessagesConfig().getComponent("commands.list.unknown");
-                    yield result;
-                }
-                case "to" -> {
-                    var result = plugin.getNameManager().getDisplayName(economyTransaction.to());
-                    if (result == null) result = plugin.getMessagesConfig().getComponent("commands.list.unknown");
-                    yield result;
-                }
-                case "amount" -> builder.content(plugin.decimalFormat.format(economyTransaction.amount()));
+                case "from" -> economyTransaction.from() == null ?
+                        economyTransaction.consoleContextOr(plugin.getDefaultContext()).displayName() :
+                        plugin.getNameManager().getDisplayName(economyTransaction.from());
+                case "to" -> economyTransaction.to() == null ?
+                        economyTransaction.consoleContextOr(plugin.getDefaultContext()).displayName() :
+                        plugin.getNameManager().getDisplayName(economyTransaction.to());
+                case "amount" -> builder.content(TradeLoggerPlugin.decimalFormat.format(economyTransaction.amount()));
                 default -> builder;
             }).build();
-
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            SkullMeta skullMeta = (SkullMeta) itemMeta;
-            if (owner.equals(economyTransaction.to())) {
-                if (economyTransaction.from() != null) {
+            final ItemStack itemStack;
+            if (economyTransaction.to() == null || economyTransaction.from() == null) {
+                itemStack = switch (economyTransaction.consoleContextOr(plugin.getDefaultContext()).name()) {
+                    case "Essentials" -> guiData.essentialsTransactionItem;
+                    case "EssentialsSell" -> guiData.essentialsSellTransactionItem;
+                    case "EssentialsEco" -> guiData.essentialsEcoTransactionItem;
+                    case "ChestShop" -> guiData.chestShopTransactionItem;
+                    case "BeastWithdraw" -> guiData.beastWithdrawTransactionItem;
+                    case "MoneyFromMobs" -> guiData.moneyFromMobsTransactionItem;
+                    case "ShopGUIPlus" -> guiData.shopGUIPlusTransactionItem;
+                    default -> guiData.unknownTransactionItem;
+                };
+                if (itemStack != null) {
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    if (owner.equals(economyTransaction.to())) {
+                        itemMeta.displayName(guiData.gainedItemName.replaceText(textReplacementConfig));
+                        itemMeta.lore(guiData.gainedItemLore.stream().map(c -> c.replaceText(textReplacementConfig)).toList());
+                    } else if (owner.equals(economyTransaction.from())) {
+                        itemMeta.displayName(guiData.paidItemName.replaceText(textReplacementConfig));
+                        itemMeta.lore(guiData.paidItemLore.stream().map(c -> c.replaceText(textReplacementConfig)).toList());
+                    }
+                    itemStack.setItemMeta(itemMeta);
+                }
+            } else {
+                itemStack = new ItemStack(Material.PLAYER_HEAD);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                SkullMeta skullMeta = (SkullMeta) itemMeta;
+                if (owner.equals(economyTransaction.to())) {
                     skullMeta.setPlayerProfile(Bukkit.createProfile(economyTransaction.from(), plugin.getNameManager().getName(economyTransaction.from())));
-                }
-                itemMeta.displayName(guiData.gainedItemName.replaceText(textReplacementConfig));
-                itemMeta.lore(guiData.gainedItemLore.stream().map(c -> c.replaceText(textReplacementConfig)).toList());
-            } else if (owner.equals(economyTransaction.from())) {
-                if (economyTransaction.to() != null) {
+                    itemMeta.displayName(guiData.gainedItemName.replaceText(textReplacementConfig));
+                    itemMeta.lore(guiData.gainedItemLore.stream().map(c -> c.replaceText(textReplacementConfig)).toList());
+                } else if (owner.equals(economyTransaction.from())) {
                     skullMeta.setPlayerProfile(Bukkit.createProfile(economyTransaction.to(), plugin.getNameManager().getName(economyTransaction.to())));
+                    itemMeta.displayName(guiData.paidItemName.replaceText(textReplacementConfig));
+                    itemMeta.lore(guiData.paidItemLore.stream().map(c -> c.replaceText(textReplacementConfig)).toList());
                 }
-                itemMeta.displayName(guiData.paidItemName.replaceText(textReplacementConfig));
-                itemMeta.lore(guiData.paidItemLore.stream().map(c -> c.replaceText(textReplacementConfig)).toList());
+                itemStack.setItemMeta(itemMeta);
             }
-            itemStack.setItemMeta(itemMeta);
             setItem(slot, itemStack);
         }
         while (slotIterator.hasNext()) setItem(slotIterator.next(), null);

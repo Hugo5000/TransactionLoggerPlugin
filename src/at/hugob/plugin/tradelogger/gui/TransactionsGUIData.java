@@ -24,13 +24,22 @@ public class TransactionsGUIData extends GUIData {
 
     public final @Nullable ItemStack previousPageItem;
     public final int previousPageSlot;
+    public final @Nullable ItemStack unknownTransactionItem;
+    public final @Nullable ItemStack essentialsTransactionItem;
+    public final @Nullable ItemStack essentialsSellTransactionItem;
+    public final @Nullable ItemStack essentialsEcoTransactionItem;
+    public final @Nullable ItemStack chestShopTransactionItem;
+    public final @Nullable ItemStack beastWithdrawTransactionItem;
+    public final @Nullable ItemStack moneyFromMobsTransactionItem;
+    public final @Nullable ItemStack shopGUIPlusTransactionItem;
+
 
     /**
      * Creates the basic GUIData needed for a GUIHandler to function
      *
-     * @param title            The tile for the GUI
-     * @param rows             The amount of rows the GUI should have
-     * @param fillerItem       The Background Filler item, null to leave empty
+     * @param title                         The tile for the GUI
+     * @param rows                          The amount of rows the GUI should have
+     * @param fillerItem                    The Background Filler item, null to leave empty
      * @param gainedItemName
      * @param gainedItemLore
      * @param paidItemName
@@ -39,12 +48,27 @@ public class TransactionsGUIData extends GUIData {
      * @param nextPageSlot
      * @param previousPageItem
      * @param previousPageSlot
+     * @param essentialsTransactionItem
+     * @param essentialsSellTransactionItem
+     * @param essentialsEcoTransactionItem
+     * @param chestShopTransactionItem
+     * @param beastWithdrawTransactionItem
+     * @param moneyFromMobsTransactionItem
+     * @param shopGUIPlusTransactionItem
      */
     public TransactionsGUIData(@NotNull Component title, int rows, @Nullable ItemStack fillerItem, @NotNull List<Integer> transactionSlots,
                                @NotNull Component gainedItemName, @NotNull List<Component> gainedItemLore,
                                @NotNull Component paidItemName, @NotNull List<Component> paidItemLore,
                                @Nullable ItemStack nextPageItem, int nextPageSlot,
-                               @Nullable ItemStack previousPageItem, int previousPageSlot) {
+                               @Nullable ItemStack previousPageItem, int previousPageSlot,
+                               @Nullable ItemStack unknownTransactionItem,
+                               @Nullable ItemStack essentialsTransactionItem,
+                               @Nullable ItemStack essentialsSellTransactionItem,
+                               @Nullable ItemStack essentialsEcoTransactionItem,
+                               @Nullable ItemStack chestShopTransactionItem,
+                               @Nullable ItemStack beastWithdrawTransactionItem,
+                               @Nullable ItemStack moneyFromMobsTransactionItem,
+                               @Nullable ItemStack shopGUIPlusTransactionItem) {
         super(title, rows, fillerItem);
         this.transactionSlots = Collections.unmodifiableList(transactionSlots);
         this.gainedItemName = Component.empty().color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false).append(gainedItemName);
@@ -55,5 +79,14 @@ public class TransactionsGUIData extends GUIData {
         this.nextPageSlot = nextPageSlot;
         this.previousPageItem = previousPageItem;
         this.previousPageSlot = previousPageSlot;
+
+        this.unknownTransactionItem = unknownTransactionItem;
+        this.essentialsTransactionItem = essentialsTransactionItem;
+        this.essentialsSellTransactionItem = essentialsSellTransactionItem;
+        this.essentialsEcoTransactionItem = essentialsEcoTransactionItem;
+        this.chestShopTransactionItem = chestShopTransactionItem;
+        this.beastWithdrawTransactionItem = beastWithdrawTransactionItem;
+        this.moneyFromMobsTransactionItem = moneyFromMobsTransactionItem;
+        this.shopGUIPlusTransactionItem = shopGUIPlusTransactionItem;
     }
 }

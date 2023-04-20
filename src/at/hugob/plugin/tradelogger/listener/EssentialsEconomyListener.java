@@ -25,11 +25,14 @@ public class EssentialsEconomyListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEssentialsBalanceUpdate(UserBalanceUpdateEvent event) {
         if (event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_PAY) return;
-
         final BigDecimal amount = event.getNewBalance().subtract(event.getOldBalance());
         final UUID playerFrom = amount.signum() < 0 ? event.getPlayer().getUniqueId() : null;
         final UUID playerTo = amount.signum() < 0 ? null : event.getPlayer().getUniqueId();
-        plugin.getTransactionLogManager().save(new EconomyTransaction(playerFrom, playerTo, amount.abs(), ZonedDateTime.now(UTC)));
+        var transaction = new EconomyTransaction(ZonedDateTime.now(UTC), playerFrom, playerTo, amount.abs(), null);
+        if(event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_SELL) transaction.consoleContext(plugin.getTransactionLogManager().getContext("EssentialsSell"));
+        else if(event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_ECO) transaction.consoleContext(plugin.getTransactionLogManager().getContext("EssentialsEco"));
+
+        plugin.getTransactionLogManager().save(transaction);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -37,6 +40,6 @@ public class EssentialsEconomyListener implements Listener {
         BigDecimal amount = event.getAmount();
         UUID playerFrom = event.getRequester().getPlayer().getUniqueId();
         UUID playerTo = event.getTarget().getUUID();
-        plugin.getTransactionLogManager().save(new EconomyTransaction(playerFrom, playerTo, amount, ZonedDateTime.now(UTC)));
+        plugin.getTransactionLogManager().save(new EconomyTransaction(ZonedDateTime.now(UTC), playerFrom, playerTo, amount.abs(), plugin.getTransactionLogManager().getContext("Essentials")));
     }
 }
