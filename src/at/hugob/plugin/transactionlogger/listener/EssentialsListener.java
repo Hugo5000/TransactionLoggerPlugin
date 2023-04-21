@@ -31,8 +31,10 @@ public class EssentialsListener implements Listener {
         final UUID playerFrom = amount.signum() < 0 ? event.getPlayer().getUniqueId() : null;
         final UUID playerTo = amount.signum() < 0 ? null : event.getPlayer().getUniqueId();
         var transaction = new EconomyTransaction(ZonedDateTime.now(UTC), playerFrom, playerTo, amount.abs(), null);
-        if(event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_SELL) transaction.consoleContext(plugin.getTransactionLogManager().getContext("EssentialsSell"));
-        else if(event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_ECO) transaction.consoleContext(plugin.getTransactionLogManager().getContext("EssentialsEco"));
+        if (event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_SELL)
+            transaction.consoleContext(plugin.getTransactionLogManager().getContext("EssentialsSell"));
+        else if (event.getCause() == UserBalanceUpdateEvent.Cause.COMMAND_ECO)
+            transaction.consoleContext(plugin.getTransactionLogManager().getContext("EssentialsEco"));
 
         plugin.getTransactionLogManager().save(transaction);
     }
@@ -47,10 +49,11 @@ public class EssentialsListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEssentialsNick(NickChangeEvent event) {
+        plugin.getLogger().info(event.getController().getName());
+        plugin.getLogger().info(event.getValue());
         var player = Bukkit.getPlayer(event.getController().getUUID());
-        if(player == null) return;
-        plugin.getNameManager().saveName(player);
+        if (player == null) return;
+        plugin.getLogger().info(player.toString());
+        Bukkit.getScheduler().runTask(plugin, () -> plugin.getNameManager().saveName(player));
     }
-
-
 }
