@@ -1,4 +1,4 @@
-package at.hugob.plugin.tradelogger.gui;
+package at.hugob.plugin.transactionlogger.gui;
 
 import at.hugob.plugin.library.gui.GUIData;
 import net.kyori.adventure.text.Component;

@@ -1,8 +1,8 @@
-package at.hugob.plugin.tradelogger;
+package at.hugob.plugin.transactionlogger;
 
-import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
-import at.hugob.plugin.tradelogger.data.EconomyTransaction;
-import at.hugob.plugin.tradelogger.data.PluginTransactionContext;
+import at.hugob.plugin.transactionlogger.data.ConsoleTransactionContext;
+import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
+import at.hugob.plugin.transactionlogger.data.PluginTransactionContext;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -19,11 +19,11 @@ import java.util.function.Predicate;
 
 public class TransactionLogManager {
     private final @NotNull ConcurrentLinkedQueue<EconomyTransaction> bufferedEconomyTransactions = new ConcurrentLinkedQueue<>();
-    private final @NotNull TradeLoggerPlugin plugin;
+    private final @NotNull TransactionLoggerPlugin plugin;
     private final @NotNull BukkitTask bukkitTask;
     private @NotNull HashMap<String, PluginTransactionContext> pluginTransactionContexts = new HashMap<>();
 
-    public TransactionLogManager(final @NotNull TradeLoggerPlugin plugin) {
+    public TransactionLogManager(final @NotNull TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
         bukkitTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::removeOldBufferedData, 0, 0);
     }
@@ -95,11 +95,11 @@ public class TransactionLogManager {
 
     public synchronized void save(EconomyTransaction transaction) {
         if (transaction.from() == null && transaction.to() == null) {
-            plugin.getLogger().warning(String.format("Transaction without a player being involved! %s", TradeLoggerPlugin.decimalFormat.format(transaction.amount())));
+            plugin.getLogger().warning(String.format("Transaction without a player being involved! %s", TransactionLoggerPlugin.decimalFormat.format(transaction.amount())));
             return;
         }
         if (Objects.equals(transaction.from(), transaction.to())) {
-            plugin.getLogger().warning(String.format("Not saving Transaction because %s sent himself money! %s", plugin.getNameManager().getName(transaction.from()), TradeLoggerPlugin.decimalFormat.format(transaction.amount())));
+            plugin.getLogger().warning(String.format("Not saving Transaction because %s sent himself money! %s", plugin.getNameManager().getName(transaction.from()), TransactionLoggerPlugin.decimalFormat.format(transaction.amount())));
             return;
         }
 

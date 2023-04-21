@@ -1,6 +1,6 @@
-package at.hugob.plugin.tradelogger.listener;
+package at.hugob.plugin.transactionlogger.listener;
 
-import at.hugob.plugin.tradelogger.TradeLoggerPlugin;
+import at.hugob.plugin.transactionlogger.TransactionLoggerPlugin;
 import me.chocolf.moneyfrommobs.api.event.GiveMoneyEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -10,9 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigDecimal;
 
 public class MoneyFromMobsListener implements Listener {
-    private final @NotNull TradeLoggerPlugin plugin;
+    private final @NotNull TransactionLoggerPlugin plugin;
 
-    public MoneyFromMobsListener(final @NotNull TradeLoggerPlugin plugin) {
+    public MoneyFromMobsListener(final @NotNull TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
     }
 

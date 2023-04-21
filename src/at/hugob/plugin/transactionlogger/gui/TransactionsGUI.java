@@ -1,8 +1,8 @@
-package at.hugob.plugin.tradelogger.gui;
+package at.hugob.plugin.transactionlogger.gui;
 
 import at.hugob.plugin.library.gui.GUIHandler;
-import at.hugob.plugin.tradelogger.TradeLoggerPlugin;
-import at.hugob.plugin.tradelogger.data.EconomyTransaction;
+import at.hugob.plugin.transactionlogger.TransactionLoggerPlugin;
+import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class TransactionsGUI extends GUIHandler<TradeLoggerPlugin, TransactionsGUIData> {
+public class TransactionsGUI extends GUIHandler<TransactionLoggerPlugin, TransactionsGUIData> {
     private final @NotNull UUID owner;
     private int page;
 
@@ -28,7 +28,7 @@ public class TransactionsGUI extends GUIHandler<TradeLoggerPlugin, TransactionsG
      * @param plugin  The Plugin Instance that owns of this GUI
      * @param guiData The data needed for this GUI to function
      */
-    public TransactionsGUI(@NotNull TradeLoggerPlugin plugin, @NotNull TransactionsGUIData guiData, final @NotNull UUID owner) {
+    public TransactionsGUI(@NotNull TransactionLoggerPlugin plugin, @NotNull TransactionsGUIData guiData, final @NotNull UUID owner) {
         super(plugin, guiData);
         this.owner = owner;
     }
@@ -91,7 +91,7 @@ public class TransactionsGUI extends GUIHandler<TradeLoggerPlugin, TransactionsG
                 case "to" -> economyTransaction.to() == null ?
                         economyTransaction.consoleContextOr(plugin.getDefaultContext()).displayName() :
                         plugin.getNameManager().getDisplayName(economyTransaction.to());
-                case "amount" -> builder.content(TradeLoggerPlugin.decimalFormat.format(economyTransaction.amount()));
+                case "amount" -> builder.content(TransactionLoggerPlugin.decimalFormat.format(economyTransaction.amount()));
                 default -> builder;
             }).build();
             final ItemStack itemStack;

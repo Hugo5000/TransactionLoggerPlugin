@@ -1,1 +1,1 @@
-rootProject.name = "TradeLogger"
+rootProject.name = "TransactionLogger"

@@ -1,13 +1,13 @@
-package at.hugob.plugin.tradelogger;
+package at.hugob.plugin.transactionlogger;
 
 import at.hugob.plugin.library.command.CommandManager;
 import at.hugob.plugin.library.config.YamlFileConfig;
-import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
-import at.hugob.plugin.tradelogger.data.EconomyTransaction;
-import at.hugob.plugin.tradelogger.database.ITradeLogDatabase;
-import at.hugob.plugin.tradelogger.database.MySQLTradeLogDatabase;
-import at.hugob.plugin.tradelogger.database.SQLiteTradeLogDatabase;
-import at.hugob.plugin.tradelogger.listener.*;
+import at.hugob.plugin.transactionlogger.data.ConsoleTransactionContext;
+import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
+import at.hugob.plugin.transactionlogger.database.ITransactionLogDatabase;
+import at.hugob.plugin.transactionlogger.database.MySQLTransactionLogDatabase;
+import at.hugob.plugin.transactionlogger.database.SQLiteTransactionLogDatabase;
+import at.hugob.plugin.transactionlogger.listener.*;
 import cloud.commandframework.ArgumentDescription;
 import cloud.commandframework.CommandHelpHandler;
 import cloud.commandframework.arguments.standard.IntegerArgument;
@@ -32,14 +32,14 @@ import java.util.stream.Collectors;
 
 import static net.kyori.adventure.text.Component.text;
 
-public class TradeLoggerPlugin extends JavaPlugin {
+public class TransactionLoggerPlugin extends JavaPlugin {
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy MMMM dd HH:mm:ss");
     public static final DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
     private final static String commandName = "transactionlog";
     private YamlFileConfig messages;
     private CommandManager commandManager;
     private GUIManager guiManager;
-    private ITradeLogDatabase database;
+    private ITransactionLogDatabase database;
     private PlayerNameManager playerNameManager;
     private TransactionLogManager transactionLogManager;
     private ConsoleTransactionContext defaultContext;
@@ -271,9 +271,9 @@ public class TradeLoggerPlugin extends JavaPlugin {
         });
     }
 
-    private ITradeLogDatabase createDatabase() {
+    private ITransactionLogDatabase createDatabase() {
         return switch (getConfig().getString("database.type")) {
-            case "mysql" -> new MySQLTradeLogDatabase(this,
+            case "mysql" -> new MySQLTransactionLogDatabase(this,
                     getConfig().getString("database.username"),
                     getConfig().getString("database.password"),
                     getConfig().getString("database.database"),
@@ -281,7 +281,7 @@ public class TradeLoggerPlugin extends JavaPlugin {
                     getConfig().getInt("database.port"),
                     getConfig().getString("database.table-prefix")
             );
-            default -> new SQLiteTradeLogDatabase(this,
+            default -> new SQLiteTransactionLogDatabase(this,
                     getConfig().getString("database.table-prefix")
             );
         };
@@ -291,7 +291,7 @@ public class TradeLoggerPlugin extends JavaPlugin {
         return messages;
     }
 
-    public ITradeLogDatabase getDatabase() {
+    public ITransactionLogDatabase getDatabase() {
         return database;
     }
 

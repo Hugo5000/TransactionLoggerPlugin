@@ -1,7 +1,7 @@
-package at.hugob.plugin.tradelogger.listener;
+package at.hugob.plugin.transactionlogger.listener;
 
-import at.hugob.plugin.tradelogger.TradeLoggerPlugin;
-import at.hugob.plugin.tradelogger.data.EconomyTransaction;
+import at.hugob.plugin.transactionlogger.TransactionLoggerPlugin;
+import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.essentialsx.api.v2.events.TransactionEvent;
 import org.bukkit.event.EventHandler;
@@ -16,9 +16,9 @@ import java.util.UUID;
 import static java.time.ZoneOffset.UTC;
 
 public class EssentialsEconomyListener implements Listener {
-    private final @NotNull TradeLoggerPlugin plugin;
+    private final @NotNull TransactionLoggerPlugin plugin;
 
-    public EssentialsEconomyListener(final @NotNull TradeLoggerPlugin plugin) {
+    public EssentialsEconomyListener(final @NotNull TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
     }
 

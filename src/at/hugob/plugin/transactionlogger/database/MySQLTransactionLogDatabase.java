@@ -1,12 +1,12 @@
-package at.hugob.plugin.tradelogger.database;
+package at.hugob.plugin.transactionlogger.database;
 
 import at.hugob.plugin.library.database.DatabaseUtils;
-import at.hugob.plugin.library.database.SQLiteDatabase;
-import at.hugob.plugin.tradelogger.TradeLoggerPlugin;
-import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
-import at.hugob.plugin.tradelogger.data.EconomyTransaction;
-import at.hugob.plugin.tradelogger.data.PlayerName;
-import at.hugob.plugin.tradelogger.data.PluginTransactionContext;
+import at.hugob.plugin.library.database.MySQLDatabase;
+import at.hugob.plugin.transactionlogger.TransactionLoggerPlugin;
+import at.hugob.plugin.transactionlogger.data.ConsoleTransactionContext;
+import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
+import at.hugob.plugin.transactionlogger.data.PlayerName;
+import at.hugob.plugin.transactionlogger.data.PluginTransactionContext;
 import com.mysql.cj.exceptions.MysqlErrorNumbers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -14,9 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.sqlite.SQLiteErrorCode;
 
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -27,13 +25,21 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> implements ITradeLogDatabase {
+public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLoggerPlugin> implements ITransactionLogDatabase {
     private static final String CREATE_PLAYERS_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%players` (
-              `id` INTEGER NOT NULL,
-              `uuid_bin` BLOB(16),
+              `id` BIGINT NOT NULL AUTO_INCREMENT,
+              `uuid_bin` BINARY(16) NOT NULL,
               `uuid_text` CHAR(36) generated always AS (
-                  SUBSTR(hex(`uuid_bin`),1,8) || '-' || SUBSTR(hex(`uuid_bin`),9,4) || '-' || SUBSTR(hex(`uuid_bin`),13,4) || '-' || SUBSTR(hex(`uuid_bin`),17,4) || '-' || SUBSTR(hex(`uuid_bin`),21,4)
+                  INSERT(
+                      INSERT(
+                          INSERT(
+                              INSERT(
+                                  hex(`uuid_bin`), 9, 0, '-'
+                              ) , 14, 0, '-'
+                          ) , 19, 0, '-'
+                      ) , 24, 0, '-'
+                  )
               ) virtual,
               `name` VARCHAR(16) NOT NULL,
               `display_name` VARCHAR(255) NOT NULL,
@@ -44,36 +50,36 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
     private static final String SET_PLAYER_NAME = """
             INSERT INTO `%prefix%players` (`uuid_bin`, `name`, `display_name`)
             VALUES (?, ?, ?)
-            ON CONFLICT (`uuid_bin`) DO UPDATE SET `name` = `excluded`.`name`, `display_name` = `excluded`.`display_name`;
+            ON DUPLICATE KEY UPDATE `display_name` = VALUES(`display_name`),`name` = VALUES(`name`);
             """;
     private static final String ADD_PLAYER_NAME = """
-            INSERT OR IGNORE INTO `%prefix%players` (`uuid_bin`, `name`, `display_name`)
+            INSERT IGNORE INTO `%prefix%players` (`uuid_bin`, `name`, `display_name`)
             VALUES (?, ?, ?);
             """;
     private static final String SELECT_PLAYERS = """
             SELECT `uuid_bin`, `name`, `display_name` FROM `%prefix%players`;
             """;
+    private static final String SET_CONSOLE_CONTEXT = """
+            INSERT INTO `%prefix%console_context` (`name`, `display_name`)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE `display_name` = VALUES(`display_name`);
+            """;
     private static final String CREATE_CONSOLE_CONTEXT_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%console_context` (
-              `id` INTEGER NOT NULL,
+              `id` BIGINT NOT NULL AUTO_INCREMENT,
               `name` VARCHAR(255) NOT NULL,
               `display_name` VARCHAR(255) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`name`)
             );
             """;
-    private static final String SET_CONSOLE_CONTEXT = """
-            INSERT INTO `%prefix%console_context` (`name`, `display_name`)
-            VALUES (?, ?)
-            ON CONFLICT (`name`) DO UPDATE SET `display_name` = `excluded`.`display_name`;
-            """;
     private static final String CREATE_TRANSACTIONS_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%transactions` (
-              `timestamp` INTEGER NOT NULL,
-              `player_id_from` INTEGER,
-              `player_id_to` INTEGER,
+              `timestamp` BIGINT NOT NULL,
+              `player_id_from` BIGINT NULL,
+              `player_id_to` BIGINT NULL,
               `amount` DECIMAL(36, 6) NOT NULL,
-              `console_context` INTEGER,
+              `console_context` BIGINT,
               PRIMARY KEY (`timestamp`,`amount`),
               FOREIGN KEY(`player_id_from`) REFERENCES `%prefix%players`(`id`),
               FOREIGN KEY(`player_id_to`) REFERENCES `%prefix%players`(`id`),
@@ -109,13 +115,18 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
             """;
 
     /**
-     * Instantiates a new SQLite Database connection
+     * Instantiates a new MySQL Database connection
      *
      * @param plugin      the plugin that instantiates this database connection
+     * @param user        the username from the database login
+     * @param password    the password from the database login
+     * @param database    the database name
+     * @param ip          the ip that points to the database
+     * @param port        the port that points to the database
      * @param tablePrefix the prefix for tables that are created in the database
      */
-    public SQLiteTradeLogDatabase(@NotNull TradeLoggerPlugin plugin, @NotNull String tablePrefix) {
-        super(plugin, new File(plugin.getDataFolder(), "transactions.db").getPath().replace('\\', '/'), tablePrefix);
+    public MySQLTransactionLogDatabase(@NotNull TransactionLoggerPlugin plugin, @NotNull String user, @NotNull String password, @NotNull String database, @NotNull String ip, int port, @NotNull String tablePrefix) {
+        super(plugin, user, password, database, ip, port, tablePrefix);
         createTables();
     }
 
@@ -150,7 +161,7 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
             statement.setString(3, GsonComponentSerializer.gson().serialize(playerName.displayName()));
             statement.executeUpdate();
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(playerName);
             } else {
                 plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
@@ -189,10 +200,10 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
                 ));
             }
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 return getPlayerNames();
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not get player names from the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
             }
         }
         return result;
@@ -213,7 +224,7 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
             statement.setString(5, transaction.consoleContext() == null ? null : transaction.consoleContext().name());
             statement.executeUpdate();
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(transaction);
             } else {
                 plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
@@ -250,7 +261,7 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
                 getEconomyTransactions(result, resultSet);
             }
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 return get(player, offset, amount);
             } else {
                 plugin.getLogger().log(Level.SEVERE, String.format("Could not get Transactions concerning %s, offset %s, amount %s", player, offset, amount), e);
@@ -271,7 +282,7 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
                 getEconomyTransactions(result, resultSet);
             }
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 return get(player, offset, amount);
             } else {
                 plugin.getLogger().log(Level.SEVERE, String.format("Could not get Transactions from %s, offset %s, amount %s", player, offset, amount), e);
@@ -292,7 +303,7 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
                 getEconomyTransactions(result, resultSet);
             }
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
+            if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 return get(player, offset, amount);
             } else {
                 plugin.getLogger().log(Level.SEVERE, String.format("Could not get Transactions to %s, offset %s, amount %s", player, offset, amount), e);
@@ -325,4 +336,3 @@ public class SQLiteTradeLogDatabase extends SQLiteDatabase<TradeLoggerPlugin> im
         }
     }
 }
-

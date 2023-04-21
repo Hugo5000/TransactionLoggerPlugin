@@ -1,9 +1,9 @@
-package at.hugob.plugin.tradelogger;
+package at.hugob.plugin.transactionlogger;
 
 import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.YamlFileConfig;
-import at.hugob.plugin.tradelogger.gui.TransactionsGUI;
-import at.hugob.plugin.tradelogger.gui.TransactionsGUIData;
+import at.hugob.plugin.transactionlogger.gui.TransactionsGUI;
+import at.hugob.plugin.transactionlogger.gui.TransactionsGUIData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GUIManager {
-    private final TradeLoggerPlugin plugin;
+    private final TransactionLoggerPlugin plugin;
     private final YamlFileConfig transactionGUIConfig;
 
     private TransactionsGUIData transactionsGUIData = new TransactionsGUIData(
@@ -32,7 +32,7 @@ public class GUIManager {
             null
     );
 
-    public GUIManager(TradeLoggerPlugin plugin) {
+    public GUIManager(TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
         this.transactionGUIConfig = new YamlFileConfig(plugin, "gui.yml");
     }

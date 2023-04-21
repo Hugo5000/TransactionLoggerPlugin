@@ -1,14 +1,14 @@
-package at.hugob.plugin.tradelogger.database;
+package at.hugob.plugin.transactionlogger.database;
 
-import at.hugob.plugin.tradelogger.data.ConsoleTransactionContext;
-import at.hugob.plugin.tradelogger.data.EconomyTransaction;
-import at.hugob.plugin.tradelogger.data.PlayerName;
+import at.hugob.plugin.transactionlogger.data.ConsoleTransactionContext;
+import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
+import at.hugob.plugin.transactionlogger.data.PlayerName;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
 
-public interface ITradeLogDatabase {
+public interface ITransactionLogDatabase {
     void save(final @NotNull PlayerName playerName);
 
     void saveNew(final @NotNull PlayerName playerName);

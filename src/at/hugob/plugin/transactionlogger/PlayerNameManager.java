@@ -1,6 +1,6 @@
-package at.hugob.plugin.tradelogger;
+package at.hugob.plugin.transactionlogger;
 
-import at.hugob.plugin.tradelogger.data.PlayerName;
+import at.hugob.plugin.transactionlogger.data.PlayerName;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -16,9 +16,9 @@ public class PlayerNameManager {
     private final HashMap<UUID, @NotNull String> playerNames = new HashMap<>();
     private final HashMap<UUID, @NotNull Component> displayNames = new HashMap<>();
     private final HashMap<String, UUID> uuids = new HashMap<>();
-    private final @NotNull TradeLoggerPlugin plugin;
+    private final @NotNull TransactionLoggerPlugin plugin;
 
-    public PlayerNameManager(final @NotNull TradeLoggerPlugin plugin) {
+    public PlayerNameManager(final @NotNull TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
         for (final PlayerName playerName : plugin.getDatabase().getPlayerNames()) {
             displayNames.put(playerName.uuid(), playerName.displayName());

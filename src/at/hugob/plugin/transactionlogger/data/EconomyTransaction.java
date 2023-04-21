@@ -1,4 +1,4 @@
-package at.hugob.plugin.tradelogger.data;
+package at.hugob.plugin.transactionlogger.data;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
