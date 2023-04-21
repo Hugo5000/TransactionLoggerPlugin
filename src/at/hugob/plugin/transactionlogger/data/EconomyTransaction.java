@@ -57,6 +57,9 @@ public class EconomyTransaction {
     public void consoleContext(ConsoleTransactionContext consoleContext) {
         if (this.consoleContext == null) this.consoleContext = consoleContext;
     }
+    public void replaceConsoleContext(ConsoleTransactionContext consoleContext) {
+        this.consoleContext = consoleContext;
+    }
 
     @Override
     public String toString() {

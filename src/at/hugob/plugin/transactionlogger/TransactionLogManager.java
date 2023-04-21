@@ -21,7 +21,7 @@ public class TransactionLogManager {
     private final @NotNull ConcurrentLinkedQueue<EconomyTransaction> bufferedEconomyTransactions = new ConcurrentLinkedQueue<>();
     private final @NotNull TransactionLoggerPlugin plugin;
     private final @NotNull BukkitTask bukkitTask;
-    private @NotNull HashMap<String, PluginTransactionContext> pluginTransactionContexts = new HashMap<>();
+    private @NotNull HashMap<String, ConsoleTransactionContext> pluginTransactionContexts = new HashMap<>();
 
     public TransactionLogManager(final @NotNull TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
@@ -29,7 +29,7 @@ public class TransactionLogManager {
     }
 
     public void reload() {
-        final HashMap<String, PluginTransactionContext> pluginTransactionContexts = new HashMap<>();
+        final HashMap<String, ConsoleTransactionContext> pluginTransactionContexts = new HashMap<>();
         if (Bukkit.getPluginManager().getPlugin("Essentials") != null) {
             pluginTransactionContexts.put("Essentials", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("Essentials"), plugin.getMessagesConfig().getComponent("console.Essentials")));
             pluginTransactionContexts.put("EssentialsSell", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("Essentials"), "EssentialsSell", plugin.getMessagesConfig().getComponent("console.EssentialsSell")));
@@ -47,11 +47,15 @@ public class TransactionLogManager {
         if (Bukkit.getPluginManager().getPlugin("ShopGUIPlus") != null) {
             pluginTransactionContexts.put("ShopGUIPlus", new PluginTransactionContext(Bukkit.getPluginManager().getPlugin("ShopGUIPlus"), plugin.getMessagesConfig().getComponent("console.ShopGUIPlus")));
         }
-        this.pluginTransactionContexts = pluginTransactionContexts;
-
-        for (PluginTransactionContext value : pluginTransactionContexts.values()) {
-            CompletableFuture.runAsync(() -> plugin.getDatabase().save(value));
+        if (plugin.getMessagesConfig().contains("console.Commands")) {
+            pluginTransactionContexts.put("Commands.ecomenu", new ConsoleTransactionContext("Commands.ecomenu", plugin.getMessagesConfig().getComponent("console.Commands.ecomenu")));
         }
+        this.pluginTransactionContexts = pluginTransactionContexts;
+        CompletableFuture.runAsync(() -> {
+            for (ConsoleTransactionContext value : pluginTransactionContexts.values()) {
+                plugin.getDatabase().save(value);
+            }
+        });
     }
 
 
@@ -83,13 +87,27 @@ public class TransactionLogManager {
                 && (to == null || to.equals(transaction.to()))
                 && transaction.consoleContext() == null);
         if (match != null) match.consoleContext(context);
-        // try again once
+            // try again once
         else Bukkit.getScheduler().runTask(plugin, () -> {
             var m2 = getMatch(transaction -> transaction.amount().compareTo(amount) == 0
                     && (from == null || from.equals(transaction.from()))
                     && (to == null || to.equals(transaction.to()))
                     && transaction.consoleContext() == null);
             if (m2 != null) m2.consoleContext(context);
+        });
+    }
+
+    public void setContext(UUID from, UUID to, BigDecimal amount, ConsoleTransactionContext context, @NotNull ConsoleTransactionContext newContext) {
+        Predicate<EconomyTransaction> predicate = transaction -> transaction.amount().compareTo(amount) == 0
+                && (from == null || from.equals(transaction.from()))
+                && (to == null || to.equals(transaction.to()))
+                && context.equals(transaction.consoleContext());
+        var match = getMatch(predicate);
+        if (match != null) match.replaceConsoleContext(newContext);
+            // try again once
+        else Bukkit.getScheduler().runTask(plugin, () -> {
+            var m2 = getMatch(predicate);
+            if (m2 != null) m2.replaceConsoleContext(newContext);
         });
     }
 

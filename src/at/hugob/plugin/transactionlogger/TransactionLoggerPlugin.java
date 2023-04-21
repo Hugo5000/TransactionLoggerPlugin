@@ -8,6 +8,7 @@ import at.hugob.plugin.transactionlogger.database.ITransactionLogDatabase;
 import at.hugob.plugin.transactionlogger.database.MySQLTransactionLogDatabase;
 import at.hugob.plugin.transactionlogger.database.SQLiteTransactionLogDatabase;
 import at.hugob.plugin.transactionlogger.listener.*;
+import at.hugob.plugin.transactionlogger.listener.command.EssentialsMenuEcoCommandListener;
 import cloud.commandframework.ArgumentDescription;
 import cloud.commandframework.CommandHelpHandler;
 import cloud.commandframework.arguments.standard.IntegerArgument;
@@ -74,6 +75,7 @@ public class TransactionLoggerPlugin extends JavaPlugin {
         if (Bukkit.getPluginManager().getPlugin("Essentials") != null) {
             getLogger().info("Tracking Essentials Economy Transactions");
             Bukkit.getPluginManager().registerEvents(new EssentialsEconomyListener(this), this);
+            Bukkit.getPluginManager().registerEvents(new EssentialsMenuEcoCommandListener(this), this);
         }
         if (Bukkit.getPluginManager().getPlugin("ChestShop") != null) {
             getLogger().info("Tracking ChestShop Transactions");

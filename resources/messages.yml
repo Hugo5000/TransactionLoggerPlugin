@@ -28,5 +28,7 @@ console:
 #  DeluxeSellWands: "SellWands"
   MoneyFromMobs: "MoneyFromMobs"
   ShopGUIPlus: "ShopGUIPlus"
+  Commands:
+    ecomenu: "DeluxeMenu"
 
 date-time-format: "yyyy MMMM dd HH:MM:ss"

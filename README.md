@@ -5,3 +5,5 @@ A simple PaperMC only plugin that Tracks Essentials Economy Transactions, with s
 - MoneyFromMobs
 - ChestShop
 - ShopGUI+
+
+Also allows for an /ecomenu command being an alias to /eco to have its own placeholder
