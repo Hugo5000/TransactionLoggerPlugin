@@ -32,6 +32,7 @@ public class TransactionsGUIData extends GUIData {
     public final @Nullable ItemStack beastWithdrawTransactionItem;
     public final @Nullable ItemStack moneyFromMobsTransactionItem;
     public final @Nullable ItemStack shopGUIPlusTransactionItem;
+    public final @Nullable ItemStack ecomenuTransactionItem;
 
 
     /**
@@ -68,7 +69,8 @@ public class TransactionsGUIData extends GUIData {
                                @Nullable ItemStack chestShopTransactionItem,
                                @Nullable ItemStack beastWithdrawTransactionItem,
                                @Nullable ItemStack moneyFromMobsTransactionItem,
-                               @Nullable ItemStack shopGUIPlusTransactionItem) {
+                               @Nullable ItemStack shopGUIPlusTransactionItem,
+                               @Nullable ItemStack ecomenuTransactionItem) {
         super(title, rows, fillerItem);
         this.transactionSlots = Collections.unmodifiableList(transactionSlots);
         this.gainedItemName = Component.empty().color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false).append(gainedItemName);
@@ -88,5 +90,6 @@ public class TransactionsGUIData extends GUIData {
         this.beastWithdrawTransactionItem = beastWithdrawTransactionItem;
         this.moneyFromMobsTransactionItem = moneyFromMobsTransactionItem;
         this.shopGUIPlusTransactionItem = shopGUIPlusTransactionItem;
+        this.ecomenuTransactionItem = ecomenuTransactionItem;
     }
 }

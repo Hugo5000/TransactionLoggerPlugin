@@ -29,6 +29,7 @@ public class GUIManager {
             null,
             null,
             null,
+            null,
             null
     );
 
@@ -60,7 +61,8 @@ public class GUIManager {
                 ConfigUtils.getItemStack(transactionGUIConfig, "console.ChestShop"),
                 ConfigUtils.getItemStack(transactionGUIConfig, "console.BeastWithdraw"),
                 ConfigUtils.getItemStack(transactionGUIConfig, "console.MoneyFromMobs"),
-                ConfigUtils.getItemStack(transactionGUIConfig, "console.ShopGUIPlus")
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.ShopGUIPlus"),
+                ConfigUtils.getItemStack(transactionGUIConfig, "console.Commands.ecomenu")
         );
     }
 

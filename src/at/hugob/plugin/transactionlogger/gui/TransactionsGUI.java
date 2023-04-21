@@ -91,7 +91,8 @@ public class TransactionsGUI extends GUIHandler<TransactionLoggerPlugin, Transac
                 case "to" -> economyTransaction.to() == null ?
                         economyTransaction.consoleContextOr(plugin.getDefaultContext()).displayName() :
                         plugin.getNameManager().getDisplayName(economyTransaction.to());
-                case "amount" -> builder.content(TransactionLoggerPlugin.decimalFormat.format(economyTransaction.amount()));
+                case "amount" ->
+                        builder.content(TransactionLoggerPlugin.decimalFormat.format(economyTransaction.amount()));
                 default -> builder;
             }).build();
             final ItemStack itemStack;
@@ -104,6 +105,7 @@ public class TransactionsGUI extends GUIHandler<TransactionLoggerPlugin, Transac
                     case "BeastWithdraw" -> guiData.beastWithdrawTransactionItem;
                     case "MoneyFromMobs" -> guiData.moneyFromMobsTransactionItem;
                     case "ShopGUIPlus" -> guiData.shopGUIPlusTransactionItem;
+                    case "Commands.ecomenu" -> guiData.ecomenuTransactionItem;
                     default -> guiData.unknownTransactionItem;
                 };
                 if (itemStack != null) {
