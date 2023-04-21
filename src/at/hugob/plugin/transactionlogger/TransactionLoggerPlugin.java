@@ -74,7 +74,7 @@ public class TransactionLoggerPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerNameListener(this), this);
         if (Bukkit.getPluginManager().getPlugin("Essentials") != null) {
             getLogger().info("Tracking Essentials Economy Transactions");
-            Bukkit.getPluginManager().registerEvents(new EssentialsEconomyListener(this), this);
+            Bukkit.getPluginManager().registerEvents(new EssentialsListener(this), this);
             Bukkit.getPluginManager().registerEvents(new EssentialsMenuEcoCommandListener(this), this);
         }
         if (Bukkit.getPluginManager().getPlugin("ChestShop") != null) {

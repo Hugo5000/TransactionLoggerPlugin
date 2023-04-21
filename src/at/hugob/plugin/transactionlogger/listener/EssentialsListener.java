@@ -2,8 +2,10 @@ package at.hugob.plugin.transactionlogger.listener;
 
 import at.hugob.plugin.transactionlogger.TransactionLoggerPlugin;
 import at.hugob.plugin.transactionlogger.data.EconomyTransaction;
+import net.ess3.api.events.NickChangeEvent;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.essentialsx.api.v2.events.TransactionEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,10 +17,10 @@ import java.util.UUID;
 
 import static java.time.ZoneOffset.UTC;
 
-public class EssentialsEconomyListener implements Listener {
+public class EssentialsListener implements Listener {
     private final @NotNull TransactionLoggerPlugin plugin;
 
-    public EssentialsEconomyListener(final @NotNull TransactionLoggerPlugin plugin) {
+    public EssentialsListener(final @NotNull TransactionLoggerPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -42,4 +44,13 @@ public class EssentialsEconomyListener implements Listener {
         UUID playerTo = event.getTarget().getUUID();
         plugin.getTransactionLogManager().save(new EconomyTransaction(ZonedDateTime.now(UTC), playerFrom, playerTo, amount.abs(), plugin.getTransactionLogManager().getContext("Essentials")));
     }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onEssentialsNick(NickChangeEvent event) {
+        var player = Bukkit.getPlayer(event.getController().getUUID());
+        if(player == null) return;
+        plugin.getNameManager().saveName(player);
+    }
+
+
 }

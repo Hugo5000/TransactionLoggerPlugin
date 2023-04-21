@@ -1,6 +1,7 @@
 package at.hugob.plugin.transactionlogger.listener;
 
 import at.hugob.plugin.transactionlogger.TransactionLoggerPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,7 +18,7 @@ public class PlayerNameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
-        plugin.getNameManager().saveName(event.getPlayer());
+        Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getNameManager().saveName(event.getPlayer()), 2);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
