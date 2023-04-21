@@ -36,7 +36,7 @@ public class SQLiteTransactionLogDatabase extends SQLiteDatabase<TransactionLogg
                   SUBSTR(hex(`uuid_bin`),1,8) || '-' || SUBSTR(hex(`uuid_bin`),9,4) || '-' || SUBSTR(hex(`uuid_bin`),13,4) || '-' || SUBSTR(hex(`uuid_bin`),17,4) || '-' || SUBSTR(hex(`uuid_bin`),21,4)
               ) virtual,
               `name` VARCHAR(16) NOT NULL,
-              `display_name` VARCHAR(255) NOT NULL,
+              `display_name` VARCHAR(512) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`uuid_bin`)
             );
@@ -57,7 +57,7 @@ public class SQLiteTransactionLogDatabase extends SQLiteDatabase<TransactionLogg
             CREATE TABLE IF NOT EXISTS `%prefix%console_context` (
               `id` INTEGER NOT NULL,
               `name` VARCHAR(255) NOT NULL,
-              `display_name` VARCHAR(255) NOT NULL,
+              `display_name` VARCHAR(512) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`name`)
             );

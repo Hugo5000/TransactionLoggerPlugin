@@ -42,7 +42,7 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
                   )
               ) virtual,
               `name` VARCHAR(16) NOT NULL,
-              `display_name` VARCHAR(255) NOT NULL,
+              `display_name` VARCHAR(512) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`uuid_bin`)
             );
@@ -68,7 +68,7 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
             CREATE TABLE IF NOT EXISTS `%prefix%console_context` (
               `id` BIGINT NOT NULL AUTO_INCREMENT,
               `name` VARCHAR(255) NOT NULL,
-              `display_name` VARCHAR(255) NOT NULL,
+              `display_name` VARCHAR(512) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`name`)
             );
