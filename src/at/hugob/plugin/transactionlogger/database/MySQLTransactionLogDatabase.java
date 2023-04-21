@@ -140,15 +140,15 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
         }
         try (var con = getConnection();
              var statement = con.createStatement()) {
-            statement.execute(CREATE_TRANSACTIONS_TABLE.replace("%prefix%", tablePrefix));
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Could not create the transactions table in the db: ", e);
-        }
-        try (var con = getConnection();
-             var statement = con.createStatement()) {
             statement.execute(CREATE_CONSOLE_CONTEXT_TABLE.replace("%prefix%", tablePrefix));
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Could not create the console context table in the db: ", e);
+        }
+        try (var con = getConnection();
+             var statement = con.createStatement()) {
+            statement.execute(CREATE_TRANSACTIONS_TABLE.replace("%prefix%", tablePrefix));
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Could not create the transactions table in the db: ", e);
         }
     }
 
