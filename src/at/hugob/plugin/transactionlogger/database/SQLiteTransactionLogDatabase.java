@@ -216,7 +216,7 @@ public class SQLiteTransactionLogDatabase extends SQLiteDatabase<TransactionLogg
             if (e.getErrorCode() == SQLiteErrorCode.SQLITE_BUSY.code) {
                 save(transaction);
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not save transaction in the db: ", e);
             }
         }
     }
@@ -232,7 +232,7 @@ public class SQLiteTransactionLogDatabase extends SQLiteDatabase<TransactionLogg
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(consoleTransactionContext);
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not save console context in the db: ", e);
             }
         }
     }

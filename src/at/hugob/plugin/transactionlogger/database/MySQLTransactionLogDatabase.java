@@ -181,7 +181,7 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(playerName);
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not save new player name in the db: ", e);
             }
         }
     }
@@ -203,7 +203,7 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 return getPlayerNames();
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not get player name in the db: ", e);
             }
         }
         return result;
@@ -227,7 +227,7 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(transaction);
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not add transaction in the db: ", e);
             }
         }
     }
@@ -243,7 +243,7 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(consoleTransactionContext);
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not set player name in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, "Could not set console context in the db: ", e);
             }
         }
     }
