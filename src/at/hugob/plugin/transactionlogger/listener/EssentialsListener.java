@@ -49,11 +49,8 @@ public class EssentialsListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onEssentialsNick(NickChangeEvent event) {
-        plugin.getLogger().info(event.getController().getName());
-        plugin.getLogger().info(event.getValue());
         var player = Bukkit.getPlayer(event.getController().getUUID());
         if (player == null) return;
-        plugin.getLogger().info(player.toString());
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getNameManager().saveName(player));
     }
 }
