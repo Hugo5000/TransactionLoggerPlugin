@@ -29,7 +29,7 @@ import java.util.logging.Level;
 public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLoggerPlugin> implements ITransactionLogDatabase {
     private static final String CREATE_PLAYERS_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%players` (
-              `id` BIGINT NOT NULL AUTO_INCREMENT,
+              `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
               `uuid_bin` BINARY(16) NOT NULL,
               `uuid_text` CHAR(36) generated always AS (
                   INSERT(
@@ -48,31 +48,35 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
               UNIQUE(`uuid_bin`)
             );
             """;
-    private static final String SET_PLAYER_NAME = """
-            INSERT INTO `%prefix%players` (`uuid_bin`, `name`, `display_name`)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE `display_name` = VALUES(`display_name`),`name` = VALUES(`name`);
-            """;
     private static final String ADD_PLAYER_NAME = """
             INSERT IGNORE INTO `%prefix%players` (`uuid_bin`, `name`, `display_name`)
             VALUES (?, ?, ?);
             """;
+    private static final String UPDATE_PLAYER_NAME = """
+            UPDATE `%prefix%players`
+            SET `name` = ?, `display_name` = ?
+            WHERE `uuid_bin` = ?;
+            """;
     private static final String SELECT_PLAYERS = """
             SELECT `uuid_bin`, `name`, `display_name` FROM `%prefix%players`;
             """;
-    private static final String SET_CONSOLE_CONTEXT = """
-            INSERT INTO `%prefix%console_context` (`name`, `display_name`)
-            VALUES (?, ?)
-            ON DUPLICATE KEY UPDATE `display_name` = VALUES(`display_name`);
-            """;
     private static final String CREATE_CONSOLE_CONTEXT_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%console_context` (
-              `id` BIGINT NOT NULL AUTO_INCREMENT,
+              `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
               `name` VARCHAR(255) NOT NULL,
               `display_name` VARCHAR(512) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`name`)
             );
+            """;
+    private static final String ADD_CONSOLE_CONTEXT = """
+            INSERT INTO `%prefix%console_context` (`name`, `display_name`)
+            VALUES (?, ?);
+            """;
+    private static final String UPDATE_CONSOLE_CONTEXT = """
+            UPDATE `%prefix%console_context`
+            SET `display_name` = ?
+            WHERE `name = ?;
             """;
     private static final String CREATE_TRANSACTIONS_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%transactions` (
@@ -156,11 +160,19 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
     @Override
     public void save(@NotNull PlayerName playerName) {
         try (var con = getConnection();
-             var statement = con.prepareStatement(SET_PLAYER_NAME.replace("%prefix%", tablePrefix))) {
-            statement.setBytes(1, DatabaseUtils.convertUuidToBinary(playerName.uuid()));
-            statement.setString(2, playerName.name());
-            statement.setString(3, GsonComponentSerializer.gson().serialize(playerName.displayName()));
-            statement.executeUpdate();
+             var statement = con.prepareStatement(UPDATE_PLAYER_NAME.replace("%prefix%", tablePrefix))) {
+            statement.setString(1, playerName.name());
+            statement.setString(2, GsonComponentSerializer.gson().serialize(playerName.displayName()));
+            statement.setBytes(3, DatabaseUtils.convertUuidToBinary(playerName.uuid()));
+            var updated = statement.executeUpdate();
+            if (updated == 0) {
+                try (var statement2 = con.prepareStatement(ADD_PLAYER_NAME.replace("%prefix%", tablePrefix))) {
+                    statement2.setBytes(1, DatabaseUtils.convertUuidToBinary(playerName.uuid()));
+                    statement2.setString(2, playerName.name());
+                    statement2.setString(3, GsonComponentSerializer.gson().serialize(playerName.displayName()));
+                    statement2.execute();
+                }
+            }
         } catch (SQLException e) {
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(playerName);
@@ -238,10 +250,17 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
     @Override
     public void save(final @NotNull ConsoleTransactionContext consoleTransactionContext) {
         try (var con = getConnection();
-             var statement = con.prepareStatement(SET_CONSOLE_CONTEXT.replace("%prefix%", tablePrefix))) {
-            statement.setString(1, consoleTransactionContext.name());
-            statement.setString(2, GsonComponentSerializer.gson().serialize(consoleTransactionContext.displayName()));
-            statement.executeUpdate();
+             var statement = con.prepareStatement(UPDATE_CONSOLE_CONTEXT.replace("%prefix%", tablePrefix))) {
+            statement.setString(1, GsonComponentSerializer.gson().serialize(consoleTransactionContext.displayName()));
+            statement.setString(2, consoleTransactionContext.name());
+            var updated = statement.executeUpdate();
+            if (updated == 0) {
+                try (var statement2 = con.prepareStatement(ADD_CONSOLE_CONTEXT.replace("%prefix%", tablePrefix))) {
+                    statement2.setString(1, consoleTransactionContext.name());
+                    statement2.setString(2, GsonComponentSerializer.gson().serialize(consoleTransactionContext.displayName()));
+                    statement2.execute();
+                }
+            }
         } catch (SQLException e) {
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(consoleTransactionContext);
