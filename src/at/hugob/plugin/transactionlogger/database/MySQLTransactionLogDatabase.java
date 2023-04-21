@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -226,8 +227,10 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
         } catch (SQLException e) {
             if (e.getErrorCode() == MysqlErrorNumbers.ER_LOCK_DEADLOCK) {
                 save(transaction);
+            } else if (e.getErrorCode() == MysqlErrorNumbers.ER_DUP_ENTRY) {
+                save(new EconomyTransaction(transaction.dateTime().plus(1, ChronoUnit.MILLIS), transaction.from(), transaction.to(), transaction.amount(), transaction.consoleContext()));
             } else {
-                plugin.getLogger().log(Level.SEVERE, "Could not add transaction in the db: ", e);
+                plugin.getLogger().log(Level.SEVERE, String.format("Could not add transaction in the db %s: ", e.getErrorCode()), e);
             }
         }
     }
