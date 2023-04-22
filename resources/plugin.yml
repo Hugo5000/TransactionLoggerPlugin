@@ -7,6 +7,9 @@ author: Hugo B.
 
 main: ${group}.${artifact}.${main}
 
+libraries:
+  - "at.hugob.plugin.library:command:1.0.0"
+
 softdepend:
   - Essentials
   - ChestShop

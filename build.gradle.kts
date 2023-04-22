@@ -35,7 +35,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
 
     implementation("at.hugob.plugin.library:gui:0.0.0-SNAPSHOT")
-    implementation("at.hugob.plugin.library:command:1.0.0")
+    compileOnly("at.hugob.plugin.library:command:1.0.0")
     implementation("at.hugob.plugin.library:config:0.0.3-SNAPSHOT")
     implementation("at.hugob.plugin.library:database:0.0.2-SNAPSHOT")
 

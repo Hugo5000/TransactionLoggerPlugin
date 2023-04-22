@@ -76,15 +76,15 @@ public class MySQLTransactionLogDatabase extends MySQLDatabase<TransactionLogger
     private static final String UPDATE_CONSOLE_CONTEXT = """
             UPDATE `%prefix%console_context`
             SET `display_name` = ?
-            WHERE `name = ?;
+            WHERE `name` = ?;
             """;
     private static final String CREATE_TRANSACTIONS_TABLE = """
             CREATE TABLE IF NOT EXISTS `%prefix%transactions` (
               `timestamp` BIGINT NOT NULL,
-              `player_id_from` BIGINT NULL,
-              `player_id_to` BIGINT NULL,
+              `player_id_from` BIGINT UNSIGNED NULL,
+              `player_id_to` BIGINT UNSIGNED NULL,
               `amount` DECIMAL(36, 6) NOT NULL,
-              `console_context` BIGINT,
+              `console_context` BIGINT UNSIGNED NULL,
               PRIMARY KEY (`timestamp`,`amount`),
               FOREIGN KEY(`player_id_from`) REFERENCES `%prefix%players`(`id`),
               FOREIGN KEY(`player_id_to`) REFERENCES `%prefix%players`(`id`),
