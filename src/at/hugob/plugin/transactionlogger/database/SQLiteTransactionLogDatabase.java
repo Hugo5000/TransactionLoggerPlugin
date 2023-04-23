@@ -37,7 +37,7 @@ public class SQLiteTransactionLogDatabase extends SQLiteDatabase<TransactionLogg
                   SUBSTR(hex(`uuid_bin`),1,8) || '-' || SUBSTR(hex(`uuid_bin`),9,4) || '-' || SUBSTR(hex(`uuid_bin`),13,4) || '-' || SUBSTR(hex(`uuid_bin`),17,4) || '-' || SUBSTR(hex(`uuid_bin`),21,4)
               ) virtual,
               `name` VARCHAR(16) NOT NULL,
-              `display_name` VARCHAR(512) NOT NULL,
+              `display_name` VARCHAR(8192) NOT NULL,
               PRIMARY KEY (`id`),
               UNIQUE(`uuid_bin`)
             );
@@ -183,10 +183,18 @@ public class SQLiteTransactionLogDatabase extends SQLiteDatabase<TransactionLogg
              var statement = con.prepareStatement(SELECT_PLAYERS.replace("%prefix%", tablePrefix));
              var resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
+                final String name = resultSet.getString("name");
+                Component displayName;
+                try {
+                    displayName = GsonComponentSerializer.gson().deserialize(resultSet.getString("display_name"));
+                } catch (Exception e) {
+                    plugin.getLogger().warning(String.format("Tried to parse displayname \"%s\" and got %s: %s", resultSet.getString("display_name"), e.getClass().getSimpleName(), e.getMessage()));
+                    displayName = Component.text(name);
+                }
+
                 result.add(new PlayerName(
                         DatabaseUtils.convertBytesToUUID(resultSet.getBytes("uuid_bin")),
-                        resultSet.getString("name"),
-                        GsonComponentSerializer.gson().deserialize(resultSet.getString("display_name"))
+                        name, displayName
                 ));
             }
         } catch (SQLException e) {
