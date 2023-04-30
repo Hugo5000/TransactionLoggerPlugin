@@ -36,7 +36,6 @@ import static net.kyori.adventure.text.Component.text;
 public class TransactionLoggerPlugin extends JavaPlugin {
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy MMMM dd HH:mm:ss");
     public static final DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
-    private final static String commandName = "transactionlog";
     private YamlFileConfig messages;
     private CommandManager commandManager;
     private GUIManager guiManager;
@@ -65,7 +64,7 @@ public class TransactionLoggerPlugin extends JavaPlugin {
             );
         } catch (InstantiationException e) {
             e.printStackTrace();
-            setEnabled(false);
+            Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
         playerNameManager = new PlayerNameManager(this);
