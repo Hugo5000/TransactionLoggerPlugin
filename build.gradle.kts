@@ -23,6 +23,7 @@ repositories {
     // paper-api
     maven("https://papermc.io/repo/repository/maven-public/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    // EssentialsX
     maven("https://repo.essentialsx.net/releases/")
     // ChestShop
     maven("https://repo.minebench.de")
@@ -32,12 +33,12 @@ repositories {
 
 dependencies {
     compileOnly("org.jetbrains:annotations:24.0.1")
-    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
 
-    implementation("at.hugob.plugin.library:gui:0.0.0-SNAPSHOT")
-    compileOnly("at.hugob.plugin.library:command:1.0.0")
-    implementation("at.hugob.plugin.library:config:0.0.3-SNAPSHOT")
-    implementation("at.hugob.plugin.library:database:0.0.2-SNAPSHOT")
+    compileOnly("at.hugob.plugin.library:gui:0.0.1")
+    compileOnly("at.hugob.plugin.library:command:1.1.0")
+    compileOnly("at.hugob.plugin.library:config:1.1.2")
+    compileOnly("at.hugob.plugin.library:database:1.0.0")
 
     compileOnly("net.essentialsx:EssentialsX:2.19.7")
     compileOnly("com.acrobot.chestshop:chestshop:3.12")
@@ -48,8 +49,9 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    java.targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 //    withSourcesJar()
 //    withJavadocJar()
 }
@@ -79,7 +81,7 @@ tasks.register<Copy>("prepareServer") {
     dependsOn("build")
     from(tasks.jar.get().archiveFile.get().asFile.path)
     rename(tasks.jar.get().archiveFile.get().asFile.name, "$pluginName.jar")
-    into("G:\\paper\\plugins")
+    into("G:\\Minecraft Servers\\paper\\plugins")
 }
 
 tasks {

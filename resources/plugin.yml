@@ -8,7 +8,10 @@ author: Hugo B.
 main: ${group}.${artifact}.${main}
 
 libraries:
-  - "at.hugob.plugin.library:command:1.0.0"
+  - "at.hugob.plugin.library:command:1.1.0"
+  - "at.hugob.plugin.library:gui:0.0.1"
+  - "at.hugob.plugin.library:config:1.1.2"
+  - "at.hugob.plugin.library:database:1.0.0"
 
 softdepend:
   - Essentials
